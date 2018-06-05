@@ -4,7 +4,7 @@ library(R.matlab)
 library(rstan)
 library(loo)
 
-setwd("~/Yoonseo Zoh/2018-1/Computational Modeling/Final Project/Codes")
+setwd("~/Journey-of-Hyeonjin-Yoonseo/")
 
 #data
 {

@@ -1,4 +1,4 @@
-setwd("~/MATLAB/data/")
+setwd("~/Journey-of-Hyeonjin-Yoonseo/")
 
 rm(list=ls())
 
@@ -33,9 +33,8 @@ simul_pars$K[simul_pars$K < 0 | simul_pars$K > 1] = 0.5
 }
 
 #'True' parameters estimated from the data
-
-source("~/Journey-of-Hyeonjin-Yoonseo/")
-parameters < rstan::extract(output6)
+{
+parameters <- rstan::extract(output6)
 
 Etamean <- vector()
 Betamean <- vector()
@@ -54,13 +53,9 @@ simul_pars <- data.frame(Etamean,
                          pSWmean,
                          pSLmean,
                          Kmean,
-                         subjID = 1:num_subjs)
+                         subjID = 1:26)
 
-
-
-
-
-
+}
 
 # For storing simulated choice data for all subjects
 Choice <- array(-1, c(num_subjs, num_advisors, num_trials))
@@ -126,8 +121,6 @@ dataListC <- list(
   AdvisorCorrect = AdvisorCorrect,
   Outcome = Outcome
 )
-
-setwd("~/Journey-of-Hyeonjin-Yoonseo/")
 
 output6 = stan("WSLS_classic+RL_classic.stan",
                data = dataListC, pars = c( "Eta", "Beta","pSW","pSL","K","Choice_pred", "log_lik"), 
@@ -198,6 +191,3 @@ ggplot(K_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size
   ggtitle("K")
 
 
-
-
-*
