@@ -140,9 +140,6 @@ generated quantities{
         else {
           // Check if participant won last round
           if(AdvisorCorrect[i, a, t-1] == Choice_pred[i, a, t-1]) {
-            pSW = pSW + theta_pSW[i]*(1-pSW);
-            pSL = (1-theta_pSL[i])*pSL;
-
             // Win Stay
             if(Choice[i, a, t-1] == 1){
               Choice_pred[i, a, t] = bernoulli_rng(pSW*K[i] + pRL*(1-K[i]));
@@ -154,11 +151,10 @@ generated quantities{
               if(Choice[i, a, t] == -1) continue;
               log_lik[i] = log_lik[i] + bernoulli_lpmf(Choice[i,a,t] | ((1-pSW)*K[i] + pRL*(1-K[i])) );
             }
+            pSW = pSW + theta_pSW[i]*(1-pSW);
+            pSL = (1-theta_pSL[i])*pSL;
           }
           else{
-            pSL = pSL + theta_pSL[i]*(1-pSL);
-            pSW = (1-theta_pSW[i])*pSW;
-
             // Lose Stay
             if(Choice[i, a, t-1] == 1){
               Choice_pred[i, a, t] = bernoulli_rng((1-pSL)*K[i] + pRL*(1-K[i]));
@@ -169,7 +165,9 @@ generated quantities{
               Choice_pred[i, a, t] = bernoulli_rng(pSL*K[i] + pRL*(1-K[i]));
               if(Choice[i, a, t] == -1) continue;
               log_lik[i] = log_lik[i] + bernoulli_lpmf(Choice[i,a,t] | (pSL*K[i] + pRL*(1-K[i])) );
-            }  
+            } 
+            pSL = pSL + theta_pSL[i]*(1-pSL);
+            pSW = (1-theta_pSW[i])*pSW;
           }
         }
         
