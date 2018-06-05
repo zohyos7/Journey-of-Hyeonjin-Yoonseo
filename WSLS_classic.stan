@@ -10,17 +10,25 @@ transformed data {
 }
 
 parameters {
-  vector<lower=0, upper=1> [N] pSW;
-  vector<lower=0, upper=1> [N] pSL;
+  vector [N] pSW_p;
+  vector [N] pSL_p;
+
 }
 
 transformed parameters {
+  vector<lower=0, upper=1> [N] pSW;
+  vector<lower=0, upper=1> [N] pSL;
+  
+  for (i in 1:N){
+    pSW[i] = Phi_approx(pSW_p[i]);
+    pSL[i] = Phi_approx(pSL_p[i]);
+    }
 }
 
 model {
   //individual parameters
-  pSW ~ beta(1, 1);
-  pSL ~ beta(1, 1);
+  pSW_p ~ normal(0, 1.0);
+  pSL_p ~ normal(0, 1.0);
   
   
   for (i in 1:N) {

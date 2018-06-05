@@ -12,22 +12,25 @@ transformed data {
 
 parameters {
   // Subject-level raw parameters (for Matt trick)
-  vector<lower=0,upper=1>[N] Eta;
-  vector[N] Beta_pr;
+  vector[N] Eta_p;
+  vector[N] Beta_p;
 }
 
 transformed parameters {
+  vector<lower=0, upper=1>[N] Eta;
   vector<lower=0>[N] Beta;
-  Beta = exp(Beta_pr);
+  
+  for (i in 1:N){
+    Eta[i] = Phi_approx(Eta[i]);
+    Beta[i] = exp(Beta_p);
+  }
 }
 
 model {
   // individual parameters
-  Eta ~ normal(0,1);
-  Beta_pr ~ normal(0,1);
+  Eta_p ~ normal(0, 1.0);
+  Beta_p ~ normal(0, 1.0);
   
-  
-  //
   for(i in 1:N){
       
     for(a in 1:A){ //n_advisor=3
