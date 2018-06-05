@@ -78,10 +78,6 @@ model {
         else {
           // Check if participant won last round
           if(AdvisorCorrect[i, a, t-1] == Choice[i, a, t-1]) {
-            
-            pSW = pSW + theta_pSW[i]*(1-pSW);
-            pSL = (1-theta_pSL[i])*pSL;
-
             // Win Stay
             if(Choice[i, a, t-1] == 1){
               Choice[i, a, t] ~ bernoulli(pSW*K[i] + pRL*(1-K[i]));
@@ -89,11 +85,10 @@ model {
             else{
               Choice[i, a, t] ~ bernoulli((1-pSW)*K[i] + pRL*(1-K[i]));  
             }
+            pSW = pSW + theta_pSW[i]*(1-pSW);
+            pSL = (1-theta_pSL[i])*pSL;
           }
           else {
-            pSL = pSL + theta_pSL[i]*(1-pSL);
-            pSW = (1-theta_pSW[i])*pSW;
-
             // Lose Stay
             if(Choice[i,a,t-1] == 1){
               Choice[i,a,t] ~ bernoulli((1-pSL)*K[i] + pRL*(1-K[i]));
@@ -101,6 +96,8 @@ model {
             else{
               Choice[i,a,t] ~ bernoulli(pSL*K[i] + pRL*(1-K[i]));
             }
+            pSL = pSL + theta_pSL[i]*(1-pSL);
+            pSW = (1-theta_pSW[i])*pSW;
           }
         }
         
