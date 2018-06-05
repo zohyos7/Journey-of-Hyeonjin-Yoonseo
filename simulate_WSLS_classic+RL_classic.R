@@ -14,8 +14,6 @@ advisor_3_correct <- 0.75
 # Set seed
 set.seed(seed)   # always set a seed number for this homework!
 
-?rnorm
-
 #Generated True parameters 
 {
 simul_pars <- data.frame(Eta = rnorm(num_subjs, 0.30, 0.15) ,
