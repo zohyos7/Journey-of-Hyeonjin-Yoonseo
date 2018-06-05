@@ -10,25 +10,34 @@ transformed data {
 }
 
 parameters {
+  vector [N] theta_pSW_p;
+  vector [N] theta_pSL_p;
+  vector [N] init_pSW_p;
+  vector [N] init_pSL_p;
+}
+
+transformed parameters {
   vector<lower=0, upper=1> [N] theta_pSW;
   vector<lower=0, upper=1> [N] theta_pSL;
   vector<lower=0, upper=1> [N] init_pSW;
   vector<lower=0, upper=1> [N] init_pSL;
   
-  
-}
-
-transformed parameters {
+  for (i in 1:N){
+    theta_pSW[i] = Phi_approx(theta_pSW_p[i]);
+    theta_pSL[i] = Phi_approx(theta_pSL_p[i]);
+    init_pSW[i] = Phi_approx(init_pSW_p[i]);  
+    init_pSL[i] = Phi_approx(init_pSL_p[i]);    
+  }
 }
 
 model {  
   vector[T/A] pSW;
   vector[T/A] pSL;
-  
-  theta_pSW ~ beta(1, 1);
-  theta_pSL ~ beta(1, 1);
-  init_pSW ~ beta(1, 1);
-  init_pSL ~ beta(1, 1);
+
+  theta_pSW_p ~ normal(0, 1);
+  theta_pSL_p ~ normal(0, 1);
+  init_pSW_p ~ normal(0, 1);
+  init_pSL_p ~ normal(0, 1);
   
   for (i in 1:N) {
     for(a in 1:A) {

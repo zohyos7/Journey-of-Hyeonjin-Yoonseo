@@ -12,8 +12,8 @@ transformed data {
 }
 
 parameters {
-  vector[N] Eta_pr;
-  vector[N] Beta_pr;
+  vector [N] Eta_p;
+  vector [N] Beta_p;
 }
 
 transformed parameters {
@@ -21,15 +21,15 @@ transformed parameters {
   vector<lower=0> [N] Beta;
 
   for (i in 1:N) {
-    Eta[i] = Phi_approx(Eta_pr[i]);
-    Beta[i] = exp(Beta_pr[i]);
+    Eta[i] = Phi_approx(Eta_p[i]);
+    Beta[i] = exp(Beta_p[i]);
   }
 }
 
 model {
   //individual parameters
-  Eta_pr ~ normal(0,1);
-  Beta_pr ~ normal(0,1);
+  Eta_p ~ normal(0,1);
+  Beta_p ~ normal(0,1);
   
   for (i in 1:N) {
     for(a in 1:A) {

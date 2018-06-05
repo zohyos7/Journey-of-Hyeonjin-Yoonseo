@@ -21,8 +21,8 @@ transformed parameters {
   vector<lower=0>[N] Beta;
   
   for (i in 1:N){
-    Eta[i] = Phi_approx(Eta[i]);
-    Beta[i] = exp(Beta_p);
+    Eta[i] = Phi_approx(Eta_p[i]);
+    Beta[i] = exp(Beta_p[i]);
   }
 }
 
