@@ -23,8 +23,8 @@ transformed parameters {
   vector<lower=0> [N] Beta;
   
   for (i in 1:N) {
-    Eta[i] = Phi_approx(Eta_p[i]);
-    Beta[i] = exp(Beta_p[i]);
+    Eta[i] = Phi_approx(mu_p[1] + sigma[1]*Eta_p[i]);
+    Beta[i] = exp(mu_p[2] + sigma[2]*Beta_p[i]);
   }
 }
 
@@ -66,8 +66,14 @@ model {
   }
 }
 generated quantities{
+  real<lower=0, upper=1> mu_Eta;
+  real<lower=0> mu_Beta;
+  
   real Choice_pred[N,A,T/A];
   real log_lik[N];
+  
+  mu_Eta = Phi_approx(mu_p[1]);
+  mu_Beta = exp(mu_p[2]);
   
   for (i in 1:N) {
     log_lik[i] = 0;

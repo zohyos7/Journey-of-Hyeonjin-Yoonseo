@@ -101,10 +101,20 @@ model {
   }
 }
 generated quantities{
+  real<lower=0, upper=1> mu_theta_pSW;
+  real<lower=0, upper=1> mu_theta_pSL;
+  real<lower=0, upper=1> mu_init_pSW;
+  real<lower=0, upper=1> mu_init_pSL;
+  
   vector[T/A] pSW;
   vector[T/A] pSL;
   real Choice_pred[N,A,T/A];
   real log_lik[N];
+  
+  mu_theta_pSW = Phi_approx(mu_p[1]);
+  mu_theta_pSL = Phi_approx(mu_p[2]);
+  mu_init_pSW = Phi_approx(mu_p[3]);
+  mu_init_pSL = Phi_approx(mu_p[4]);
   
   for (i in 1:N) {
     log_lik[i] = 0;

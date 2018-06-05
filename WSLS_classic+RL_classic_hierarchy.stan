@@ -105,11 +105,23 @@ model {
   
 }
 generated quantities{
+  real <lower=0, upper=1> mu_Eta;
+  real <lower=0> mu_Beta;
+  real <lower=0, upper=1> mu_pSW;
+  real <lower=0, upper=1> mu_pSL;
+  real <lower=0, upper=1> mu_K;
+  
   real Choice_pred[N,A,T/A];    
   real log_lik[N];
   real pRL;
   real V; // expected value
   real PE; // prediction error
+  
+  mu_Eta = Phi_approx(mu_p[1]);
+  mu_Beta = exp(mu_p[2]);
+  mu_pSW = Phi_approx(mu_p[3]);
+  mu_pSL = Phi_approx(mu_p[4]);
+  mu_K = Phi_approx(mu_p[5]);
   
   
   {for (i in 1:N) {

@@ -66,8 +66,14 @@ model {
   }
 }
 generated quantities{
+  real mu_pSW;
+  real mu_pSL;
+  
   real Choice_pred[N,A,T/A];    
   real log_lik[N];
+  
+  mu_pSW = Phi_approx(mu_p[1]);
+  mu_pSL = Phi_approx(mu_p[2]);
   
   {
    for (i in 1:N) {

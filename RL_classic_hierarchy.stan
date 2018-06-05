@@ -62,9 +62,14 @@ model {
   }
 }
 generated quantities {
+  real<lower=0, upper=1> mu_Eta;
+  real<lower=0> mu_Beta;
+  
   real Choice_pred[N,A,T/A];
   real log_lik[N];
   
+  mu_Eta = Phi_approx(mu_p[1]);
+  mu_Beta = exp(mu_p[2]);
 
   for (i in 1:N) {
     log_lik[i] = 0;
