@@ -12,6 +12,8 @@ transformed data {
 }
 
 parameters {
+  vector [N] mu_p;
+  vector<lower=0>[2] sigma;
   vector [N] Eta_p;
   vector [N] Beta_p;
 }
@@ -28,6 +30,8 @@ transformed parameters {
 
 model {
   //individual parameters
+  mu_p ~ normal(0,1);
+  sigma ~ cauchy(0,5);
   Eta_p ~ normal(0,1);
   Beta_p ~ normal(0,1);
   

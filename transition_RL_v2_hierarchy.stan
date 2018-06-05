@@ -1,9 +1,9 @@
 data {
-  int<lower=1> N;                                        // Number of subjects
-  int<lower=1> T;                                        // Number of trials across subjects
-  int<lower=1> A;                                        // number of nAdvisor
-  int<lower=-1, upper=1> Choice[N,A,T/A];                            
-  int<lower=0,upper=1> AdvisorCorrect[N,A,T/A];   // Outcome for each subject-block-trial
+int<lower=1> N;                                        // Number of subjects
+int<lower=1> T;                                        // Number of trials across subjects
+int<lower=1> A;                                        // number of nAdvisor
+int<lower=-1, upper=1> Choice[N,A,T/A];                            
+int<lower=0,upper=1> AdvisorCorrect[N,A,T/A];   // Outcome for each subject-block-trial
 }
 
 transformed data {
@@ -12,6 +12,8 @@ transformed data {
 }
 
 parameters {
+  vector [2] mu_p;
+  vector<lower=0>[2] sigma;
   vector [N] Eta_p;
   vector [N] Beta_p;
 }
@@ -19,7 +21,7 @@ parameters {
 transformed parameters {
   vector<lower=0, upper=1> [N] Eta;
   vector<lower=0> [N] Beta;
-
+  
   for (i in 1:N) {
     Eta[i] = Phi_approx(Eta_p[i]);
     Beta[i] = exp(Beta_p[i]);
@@ -28,6 +30,8 @@ transformed parameters {
 
 model {
   //individual parameters
+  mu_p ~ normal(0,1);
+  sigma ~ cauchy(0,5);
   Eta_p ~ normal(0,1);
   Beta_p ~ normal(0,1);
   
@@ -38,7 +42,7 @@ model {
       real PE;
       
       ev = initV;
-
+      
       for (t in 1:T/A) {
         int samesame;
         int result;
@@ -49,7 +53,7 @@ model {
         else{
           if(Choice[i, a, t] == Choice[i, a, t-1]) samesame = 2;
           else samesame = 1;
-        
+          
           if(AdvisorCorrect[i, a, t] == Choice[i, a, t]) result = 1;
           else result = -1;
           
@@ -73,11 +77,11 @@ generated quantities{
       real PE;
       
       ev = initV;
-
+      
       for (t in 1:T/A) {
         int samesame;
         int result;
-
+        
         if (Choice[i, a, t] == -1) {
           Choice_pred[i, a, t] = -1;
         }
@@ -89,26 +93,24 @@ generated quantities{
         else{
           if(Choice[i, a, t] == Choice[i, a, t-1]) samesame = 2;
           else samesame = 1;
-        
+          
           if(AdvisorCorrect[i, a, t] == Choice[i, a, t]) result = 1;
           else result = -1;
-
-            if(Choice[i, a, t-1] == 1){
-              Choice_pred[i, a, t] = categorical_rng((softmax(ev*Beta[i])))-1;
-              if(Choice[i,a,t] == -1) continue;
-              log_lik[i] = log_lik[i] + categorical_logit_lpmf(samesame | ev*Beta[i]);             
-             }
-            else{
-              Choice_pred[i, a, t] = 2-categorical_rng((softmax(ev*Beta[i])));
-              if(Choice[i,a,t] == -1) continue;
-              log_lik[i] = log_lik[i] + categorical_logit_lpmf(samesame | ev*Beta[i]);             
-            }
-            PE = result - ev[samesame];
-            ev[samesame] = ev[samesame] + Eta[i]*PE;
+          
+          if(Choice[i, a, t-1] == 1){
+            Choice_pred[i, a, t] = categorical_rng((softmax(ev*Beta[i])))-1;
+            if(Choice[i,a,t] == -1) continue;
+            log_lik[i] = log_lik[i] + categorical_logit_lpmf(samesame | ev*Beta[i]);             
           }
+          else{
+            Choice_pred[i, a, t] = 2-categorical_rng((softmax(ev*Beta[i])));
+            if(Choice[i,a,t] == -1) continue;
+            log_lik[i] = log_lik[i] + categorical_logit_lpmf(samesame | ev*Beta[i]);             
+          }
+          PE = result - ev[samesame];
+          ev[samesame] = ev[samesame] + Eta[i]*PE;
         }
       }
     }
   }
-
-
+}

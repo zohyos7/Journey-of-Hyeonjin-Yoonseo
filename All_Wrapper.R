@@ -4,7 +4,7 @@ library(R.matlab)
 library(rstan)
 library(loo)
 
-setwd("~/Yoonseo Zoh/2018-1/Computational Modeling/Final Project/Codes")
+setwd("~/Journey-of-Hyeonjin-Yoonseo/")
 
 #data
 {
@@ -105,7 +105,7 @@ output3 = stan("WSLS_learning.stan", data = dataListA,
 
 #RL_transition1
 
-output4 = stan("transition_RL_v2.stan", data = dataListA, pars = c("Eta", "Beta","Choice_pred","log_lik"),
+output4 = stan("transition_RL_v1.stan", data = dataListA, pars = c("Eta", "Beta","Choice_pred","log_lik"),
                iter = 2000, warmup=1000, chains=2, cores=2)
 
 
@@ -144,6 +144,13 @@ LOOIC_5 <- loo::loo(lik_5, cores =2)
 LOOIC_6 <- loo::loo(lik_6, cores =2)
 LOOIC_7 <- loo::loo(lik_7, cores =2)
 
+LOOIC_1
+LOOIC_2
+LOOIC_3
+LOOIC_4
+LOOIC_5
+LOOIC_6
+LOOIC_7
 
 library(loo)
 LOOIC_comparison <- print(compare(x = list(LOOIC_1,LOOIC_2,LOOIC_3,LOOIC_4,LOOIC_5,LOOIC_6,LOOIC_7)))

@@ -12,18 +12,33 @@ transformed data {
 }
 
 parameters {
-  vector<lower=0,upper=1>[N] Eta;
-  vector[N] Beta_pr;
+  vector [N] Eta_p;
+  vector [N] Beta_p;
+  vector [N] theta_pSW_p;
+  vector [N] theta_pSL_p;
+  vector [N] init_pSW_p;
+  vector [N] init_pSL_p;
+  vector [N] K_p;
+}
+
+transformed parameters {
+  vector<lower=0, upper=1> [N] Eta;
+  vector<lower=0> [N] Beta;
   vector<lower=0, upper=1> [N] theta_pSW;
   vector<lower=0, upper=1> [N] theta_pSL;
   vector<lower=0, upper=1> [N] init_pSW;
   vector<lower=0, upper=1> [N] init_pSL;
   vector<lower=0, upper=1> [N] K;
-}
-
-transformed parameters {
-  vector<lower=0>[N] Beta;
-  Beta = exp(Beta_pr);
+  
+  for (i in 1:N){
+    Eta[i] = Phi_approx(Eta_p[i]);
+    Beta[i] = exp(Beta_p[i]);
+    theta_pSW[i] = Phi_approx(theta_pSW_p[i]);
+    theta_pSL[i] = Phi_approx(theta_pSL_p[i]);
+    init_pSW[i] = Phi_approx(init_pSW_p[i]);
+    init_pSL[i] = Phi_approx(init_pSL_p[i]);
+    K[i] = Phi_approx(K_p[i]);
+  }
 }
 
 model {
@@ -33,13 +48,13 @@ model {
   real V; // expected value
   real PE; // prediction error
   
-  Eta ~ normal(0,1);
-  Beta_pr ~ normal(0,1);
-  theta_pSW ~ beta(1, 1);
-  theta_pSL ~ beta(1, 1);
-  init_pSW ~ beta(1, 1);
-  init_pSL ~ beta(1, 1);
-  K ~ beta(1,1);
+  Eta_p ~ normal(0, 1);
+  Beta_p ~ normal(0, 1);
+  theta_pSW_p ~ normal(0, 1);
+  theta_pSL_p ~ normal(0, 1);
+  init_pSW_p ~ normal(0, 1);
+  init_pSL_p ~ normal(0, 1);
+  K_p ~ normal(0,1);
   
   for (i in 1:N) {
     for(a in 1:A) {

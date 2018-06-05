@@ -12,16 +12,27 @@ transformed data {
 }
 
 parameters {
-  vector<lower=0, upper=1> [N] Eta;
-  vector[N] Beta_pr;
-  vector<lower=0, upper=1> [N] pSW;
-  vector<lower=0, upper=1> [N] pSL;
-  vector<lower=0, upper=1> [N] K;
+  vector [N] Eta_p;
+  vector [N] Beta_p;
+  vector [N] pSW_p;
+  vector [N] pSL_p;
+  vector [N] K_p;
 }
 
 transformed parameters {
-  vector<lower=0>[N] Beta;
-  Beta = exp(Beta_pr);
+  vector<lower=0, upper=1> [N] Eta;
+  vector<lower=0> [N] Beta;
+  vector<lower=0, upper=1> [N] pSW;
+  vector<lower=0, upper=1> [N] pSL;
+  vector<lower=0, upper=1> [N] K;
+  
+  for (i in 1:N){
+    Eta[i] = Phi_approx(Eta_p[i]);
+    Beta[i] = exp(Beta_p[i]);
+    pSW[i] = Phi_approx(pSW_p[i]);
+    pSL[i] = Phi_approx(pSL_p[i]);
+    K[i] = Phi_approx(K_p[i]);  
+  }
 }
 
 model {
@@ -30,11 +41,12 @@ model {
   real V; // expected value
   real PE; // prediction error
   //individual parameters
-  pSW ~ beta(1, 1);
-  pSL ~ beta(1, 1);
-  Eta ~ normal(0, 1);
-  Beta_pr ~ normal(0, 1);
-  K ~ beta(1,1);
+  
+  pSW_p ~ normal(0, 1);
+  pSL_p ~ normal(0, 1);
+  Eta_p ~ normal(0, 1);
+  Beta_p ~ normal(0, 1);
+  K_p ~ normal(0, 1);
 
 
   for (i in 1:N) {
