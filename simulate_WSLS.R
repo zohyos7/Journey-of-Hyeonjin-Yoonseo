@@ -21,7 +21,7 @@ simul_pars <- data.frame(pSW= rnorm(num_subjs, 0.85, 0.15),
                          subjID  = 1:num_subjs)
 
 simul_pars$pSW[simul_pars$pSW < 0 | simul_pars$pSW > 1] = 0.85
-simul_pars$pSL[simul_pars$pSL > 0 | simul_pars$pSL > 1] = 0.15
+simul_pars$pSL[simul_pars$pSL < 0 | simul_pars$pSL > 1] = 0.15
 }
 
 # True parameters with real data
