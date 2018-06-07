@@ -38,7 +38,21 @@ simul_pars <- data.frame(pSWmean,
                          pSLmean,
                          subjID = 1:26)
 }
+
+{
+  parameters <- rstan::extract(output1_h)
   
+  pSWmean <- vector()
+  pSLmean <- vector()
+  
+  for(i in 1:26){pSWmean[i] <- mean(parameters$pSW[,i])}
+  for(i in 1:26){pSLmean[i] <- mean(parameters$pSL[,i])}
+  
+  simul_pars <- data.frame(pSWmean,
+                           pSLmean,
+                           subjID = 1:26)
+}
+
 
 Choice <- array(-1, c(num_subjs, num_advisors, num_trials))
 AdvisorCorrect <- array(0, c(num_subjs, num_advisors, num_trials))
@@ -99,15 +113,17 @@ dataList <- list(
   T = num_trials*num_advisors,
   A = num_advisors,
   Choice = Choice,
-  AdviosrCorrect = AdvisorCorrect
+  AdvisorCorrect = AdvisorCorrect
 )
 
-output = stan("WSLS_classic_hierarchy.stan", data = dataList, pars=c("pSW", "pSL"),
-              iter = 2000, warmup=1000, chains=2, cores=2)
-
-
 output = stan("WSLS_classic.stan", data = dataList, pars=c("pSW", "pSL"),
-              iter = 2000, warmup=1000, chains=2, cores=2)
+              iter = 4000, warmup=2000, chains=4, cores=4)
+
+
+output_h = stan("WSLS_classic_hierarchy.stan", data = dataList, pars=c("pSW", "pSL","mu_pSW", "mu_pSL"),
+              iter = 4000, warmup=2000, chains=4, cores=4)
+
+theme_set(theme_classic())
 
 print(output)
 
@@ -128,15 +144,77 @@ pSW_comparison <- data.frame(true = simul_pars$pSW, posterior = pSW_mean, poster
 pSL_comparison <- data.frame(true = simul_pars$pSL, posterior = pSL_mean, posterior_sd = pSL_sd)
 
 
-ggplot(pSW_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+pSW <- ggplot(pSW_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("pSW")
 
 
-ggplot(pSL_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+pSL <- ggplot(pSL_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("pSL")
 
 
+
+hierarchical_pSW <- ggplot(pSW_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  geom_hline(yintercept=mean(parameters$mu_pSW), slope =0, color = "red", linetype = "dashed", size=0.5)+
+  ggtitle("hierarchical_pSW")
+
+hierarchical_pSL <- ggplot(pSL_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  geom_hline(yintercept=mean(parameters$mu_pSL), slope =0, color = "red", linetype = "dashed", size=0.5)+
+  ggtitle("hierarchical_pSL")
+
+
+
+ 
+pSW+geom_smooth(method=lm, se=FALSE)
+pSL+geom_smooth(method=lm, se=FALSE)
+hierarchical_pSL+geom_smooth(method=lm, se=FALSE)
+hierarchical_pSW+geom_smooth(method=lm, se=FALSE)
+
+multiplot(hierarchical_pSW+geom_smooth(method=lm, se=FALSE),
+          pSW+geom_smooth(method=lm, se=FALSE),
+          hierarchical_pSL+geom_smooth(method=lm, se=FALSE),
+          pSL+geom_smooth(method=lm, se=FALSE), cols= 2)
+
+#multiplot function
+{multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}}
