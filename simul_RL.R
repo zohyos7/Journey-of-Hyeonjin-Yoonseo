@@ -3,7 +3,7 @@ setwd("~/Journey-of-Hyeonjin-Yoonseo/")
 rm(list=ls())
 
 # Simulation parameters
-seed <- 0777    # do not change the seed number
+seed <- 0778   # do not change the seed number
 num_subjs <- 26 # number of subjects
 num_trials <- 108 # number of trials per subject per advisor
 num_advisors <- 3
@@ -36,6 +36,20 @@ for(i in 1:26){Betamean[i] <- mean(parameters$Beta[,i])}
 simul_pars <- data.frame(Etamean,
                          Betamean,
                          subjID = 1:26)
+}
+
+{
+  parameters <- rstan::extract(output2_h)
+  
+  Etamean <- vector()
+  Betamean <- vector()
+  
+  for(i in 1:26){Etamean[i] <- mean(parameters$Eta[,i])}
+  for(i in 1:26){Betamean[i] <- mean(parameters$Beta[,i])}
+  
+  simul_pars <- data.frame(Etamean,
+                           Betamean,
+                           subjID = 1:26)
 }
 
 # For storing simulated choice data for all subjects
@@ -81,14 +95,14 @@ dataList <- list(
 )
 
 
-output_h = stan("RL_classic_hierarchy.stan", data = dataList, pars=c("Eta", "Beta"),
-              iter = 2000, warmup=1000, chains=2, cores=2)
+output = stan("RL_classic.stan", data = dataList, pars=c("Eta", "Beta"),
+              iter = 4000, warmup=2000, chains=4, cores=4)
 
 
-output_nh = stan("RL_classic.stan", data = dataList, pars=c("Eta", "Beta"),
-              iter = 2000, warmup=1000, chains=2, cores=2)
+output_h = stan("RL_classic_hierarchy.stan", data = dataList, pars=c("Eta", "Beta","mu_Eta", "mu_Beta"),
+              iter = 4000, warmup=2000, chains=4, cores=4)
 
-parameters <- rstan::extract(output_nh)
+parameters <- rstan::extract(output_h)
 
 mean(parameters$Eta)
 mean(parameters$Beta)
@@ -98,26 +112,43 @@ Eta_sd = apply(parameters$Eta, 2, sd)
 Beta_mean = apply(parameters$Beta, 2, mean)
 Beta_sd = apply(parameters$Beta, 2, sd)
 
-stan_plot(output_h, "Eta", show_density=T)
-stan_plot(output_h, "Beta", show_density=T)
-
 Eta_comparison <- data.frame(true = simul_pars$Eta, posterior = Eta_mean, posterior_sd = Eta_sd)
 Beta_comparison <- data.frame(true = simul_pars$Beta, posterior = Beta_mean, posterior_sd = Beta_sd)
 
 
-ggplot(Eta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+Eta <- ggplot(Eta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("Eta")
 
 
-ggplot(Beta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+Beta <- ggplot(Beta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("Beta")
 
+hierarchical_Eta <- ggplot(Eta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  geom_hline(yintercept=mean(parameters$mu_Eta), slope =0, color = "red", linetype = "dashed", size=0.5)+
+  ggtitle("hierarchical_Eta")
+
+hierarchical_Beta <- ggplot(Beta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  geom_hline(yintercept=mean(parameters$mu_Beta), slope =0, color = "red", linetype = "dashed", size=0.5)+
+  ggtitle("hierarchical_Beta")
 
 
+Eta+geom_smooth(method=lm, se=FALSE)
+Beta+geom_smooth(method=lm, se=FALSE)
+
+hierarchical_Beta+geom_smooth(method=lm, se=FALSE)
+
+multiplot(hierarchical_Eta+geom_smooth(method=lm, se=FALSE),
+          Eta+geom_smooth(method=lm, se=FALSE),
+          hierarchical_Beta+geom_smooth(method=lm, se=FALSE),
+          Beta+geom_smooth(method=lm, se=FALSE), cols= 2)
 
 
 

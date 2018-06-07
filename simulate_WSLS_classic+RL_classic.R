@@ -15,24 +15,10 @@ advisor_3_correct <- 0.75
 set.seed(seed)   # always set a seed number for this homework!
 
 #Generated True parameters 
-{
-simul_pars <- data.frame(Eta = rnorm(num_subjs, 0.30, 0.15) ,
-                         Beta = rnorm(num_subjs, 5.50, 5.00),
-                         pSW = rnorm(num_subjs, 0.80, 0.20),
-                         pSL = rnorm(num_subjs, 0.30, 0.15),
-                         K = rnorm(num_subjs, 0.5, 0.3),
-                         subjID  = 1:num_subjs)
-
-simul_pars$Eta[simul_pars$Eta < 0 | simul_pars$Eta > 1 ] = 0.30
-simul_pars$Beta[simul_pars$Beta < 0 ] = 5.5
-simul_pars$pSW[simul_pars$pSW < 0 | simul_pars$pSW > 1] = 0.80
-simul_pars$pSL[simul_pars$pSL < 0 | simul_pars$pSL > 1] = 0.30
-simul_pars$K[simul_pars$K < 0 | simul_pars$K > 1] = 0.5
-}
 
 #'True' parameters estimated from the data
 {
-parameters <- rstan::extract(output6)
+parameters <- rstan::extract(output6_h)
 
 Etamean <- vector()
 Betamean <- vector()
@@ -123,6 +109,11 @@ dataListC <- list(
 output6 = stan("WSLS_classic+RL_classic.stan",
                data = dataListC, pars = c( "Eta", "Beta","pSW","pSL","K","Choice_pred", "log_lik"), 
                iter = 2000, warmup=1000, chains=2, cores=2)
+
+output6_h = stan("WSLS_classic+RL_classic_hierarchy.stan",
+                 data = dataListC, pars = c( "Eta", "Beta","pSW","pSL","K","Choice_pred", "log_lik", "mu_Eta", "mu_Beta", "mu_pSW", "mu_pSL", "mu_K"), 
+                 iter = 4000, warmup = 2000, chains=4, cores=4)
+
 print(output6)
 
 
@@ -160,32 +151,109 @@ pSL_comparison <- data.frame(true = simul_pars$pSL, posterior = pSL_mean, poster
 K_comparison<- data.frame(true = simul_pars$K, posterior = K_mean, posterior_sd = K_sd)
 
 
-ggplot(pSW_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+pSW <- ggplot(pSW_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("pSW")
 
 
-ggplot(pSL_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+pSL <- ggplot(pSL_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("pSL")
 
 
-ggplot(Eta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+Eta <- ggplot(Eta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("Eta")
 
 
-ggplot(Beta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+Beta <- ggplot(Beta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("Beta")
 
-ggplot(K_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+K <- ggplot(K_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
   geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
   geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
   ggtitle("K")
 
 
+hierarchical_pSW <- ggplot(pSW_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  ggtitle("pSW")
+
+
+hierarchical_pSL <- ggplot(pSL_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  ggtitle("pSL")
+
+
+hierarchical_Eta <- ggplot(Eta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  ggtitle("Eta")
+
+
+hierarchical_Beta <- ggplot(Beta_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  ggtitle("Beta")
+
+hierarchical_K <- ggplot(K_comparison, aes(x=true,y=posterior)) + geom_point(colour = "blue", size = 2)+
+  geom_errorbar(aes(ymax=posterior+posterior_sd,ymin=posterior-posterior_sd,width=0)) +
+  geom_abline(intercept=0, slope=1, color = "gray", linetype = "dashed", size = 0.5) +
+  ggtitle("K")
+
+
+multiplot(hierarchical_Eta + geom_smooth(method=lm, se = FALSE),
+          Eta + geom_smooth(method=lm, se=FALSE), cols = 1)
+multiplot(hierarchical_Beta + geom_smooth(method=lm, se = FALSE),
+          Beta + geom_smooth(method=lm, se=FALSE), cols = 1)
+multiplot(hierarchical_pSW + geom_smooth(method=lm, se = FALSE),
+          pSW + geom_smooth(method=lm, se=FALSE), cols = 1)
+multiplot(hierarchical_pSL + geom_smooth(method=lm, se = FALSE),
+          pSL + geom_smooth(method=lm, se=FALSE), cols = 1)
+multiplot(hierarchical_K + geom_smooth(method=lm, se = FALSE),
+          K + geom_smooth(method=lm, se=FALSE), cols = 1)
+
+
+
+{multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}}
